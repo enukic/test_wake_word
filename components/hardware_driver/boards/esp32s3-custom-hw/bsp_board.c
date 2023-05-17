@@ -20,11 +20,8 @@
 #include "driver/gpio.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "i2c_bus.h"
 #include "esp_rom_sys.h"
 #include "bsp_board.h"
-#include "es7210.h"
-#include "es8311.h"
 #include "esp_vfs_fat.h"
 #include "sdmmc_cmd.h"
 #if ((SOC_SDMMC_HOST_SUPPORTED) && (FUNC_SDMMC_EN))
@@ -41,187 +38,6 @@ static const char *TAG = "board";
 static int s_play_sample_rate = 16000;
 static int s_play_channel_format = 1;
 static int s_bits_per_chan = 16;
-typedef enum {
-    CODEC_TYPE_ES7210 = 0,
-    CODEC_TYPE_ES8311,
-    CODEC_TYPE_ES8388,
-    CODEC_TYPE_MAX,
-    CODEC_TYPE_NONE = -1,
-} codec_type_t;
-
-typedef struct {
-    uint8_t dev_addr;
-    char *dev_name;
-    codec_type_t dev_type;
-} codec_dev_t;
-
-static codec_dev_t codec_dev_list[] = {
-    { 0x40, "ES7210", CODEC_TYPE_ES7210 },
-    { 0x18, "ES8311", CODEC_TYPE_ES8311 },
-    { 0x20, "ES8388", CODEC_TYPE_ES8388 },
-};
-
-esp_err_t bsp_i2c_add_device(i2c_bus_device_handle_t *i2c_device_handle, uint8_t dev_addr)
-{
-    if (NULL == i2c_bus_handle) {
-        ESP_LOGE(TAG, "Failed create I2C device");
-        return ESP_FAIL;
-    }
-
-    *i2c_device_handle = i2c_bus_device_create(i2c_bus_handle, dev_addr, 400000);
-
-    if (NULL == i2c_device_handle) {
-        ESP_LOGE(TAG, "Failed create I2C device");
-        return ESP_FAIL;
-    }
-
-    return ESP_OK;
-}
-
-i2c_bus_handle_t bsp_i2c_bus_get_handle(void)
-{
-    return i2c_bus_handle;
-}
-
-esp_err_t bsp_i2c_init(i2c_port_t i2c_num, uint32_t clk_speed)
-{
-    /* Check if bus is already created */
-    if (NULL != i2c_bus_handle) {
-        ESP_LOGE(TAG, "I2C bus already initialized.");
-        return ESP_FAIL;
-    }
-
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .scl_io_num = GPIO_I2C_SCL,
-        .sda_io_num = GPIO_I2C_SDA,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = clk_speed,
-    };
-
-    i2c_bus_handle = i2c_bus_create(i2c_num, &conf);
-
-    if (NULL == i2c_bus_handle) {
-        ESP_LOGE(TAG, "Failed create I2C bus");
-        return ESP_FAIL;
-    }
-
-    return ESP_OK;
-}
-
-esp_err_t bsp_i2c_probe(void)
-{
-    if (NULL == bsp_i2c_bus_get_handle()) {
-        ESP_LOGE(TAG, "I2C bus not initialized");
-        return ESP_ERR_INVALID_STATE;
-    }
-
-    i2c_bus_t *i2c_bus = (i2c_bus_t *) bsp_i2c_bus_get_handle();
-
-    for (size_t i = 1; i < 0x80; i++) {
-        i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-        i2c_master_start(cmd);
-        i2c_master_write_byte(cmd, ( i << 1 ), ACK_CHECK_EN);
-        i2c_master_stop(cmd);
-        esp_err_t ret_val = i2c_master_cmd_begin(i2c_bus->i2c_port, cmd, pdMS_TO_TICKS(500));
-        i2c_cmd_link_delete(cmd);
-        if (ESP_OK == ret_val) {
-            ESP_LOGW(TAG, "Found I2C Device at 0x%02X", i);
-        }
-    }
-
-    return ESP_OK;
-}
-
-esp_err_t bsp_i2c_probe_addr(uint8_t addr)
-{
-    /* Use 7 bit address here */
-    if (addr >= 0x80) {
-        return ESP_ERR_INVALID_ARG;
-    }
-
-    /* Check if I2C bus initialized */
-    if (NULL == bsp_i2c_bus_get_handle()) {
-        ESP_LOGE(TAG, "I2C bus not initialized");
-        return ESP_ERR_INVALID_STATE;
-    }
-
-    /* Get I2C bus object from i2c_bus_handle */
-    i2c_bus_t *i2c_bus = (i2c_bus_t *) bsp_i2c_bus_get_handle();
-
-    /* Create probe cmd link */
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, ( addr << 1 ), ACK_CHECK_EN);
-    i2c_master_stop(cmd);
-
-    /* Start probe cmd link */
-    esp_err_t ret_val = i2c_master_cmd_begin(i2c_bus->i2c_port, cmd, pdMS_TO_TICKS(500));
-
-    /* Delete cmd link after probe ends */
-    i2c_cmd_link_delete(cmd);
-
-    /* Get probe result if ESP_OK equals to ret_val */
-    return ret_val;
-}
-
-esp_err_t bsp_codec_adc_init(audio_hal_iface_samples_t sample_rate)
-{
-    esp_err_t ret_val = ESP_OK;
-    audio_hal_codec_config_t cfg = {
-        .codec_mode = AUDIO_HAL_CODEC_MODE_ENCODE,
-        .adc_input = AUDIO_HAL_ADC_INPUT_ALL,
-        .i2s_iface = {
-            .bits = AUDIO_HAL_BIT_LENGTH_16BITS,
-            .fmt = AUDIO_HAL_I2S_NORMAL,
-            .mode = AUDIO_HAL_MODE_SLAVE,
-            .samples = sample_rate,
-        },
-    };
-
-    ret_val |= es7210_adc_init(&cfg);
-    ret_val |= es7210_adc_config_i2s(cfg.codec_mode, &cfg.i2s_iface);
-    ret_val |= es7210_adc_set_gain(ES7210_INPUT_MIC1, GAIN_37_5DB);
-    ret_val |= es7210_adc_set_gain(ES7210_INPUT_MIC2, GAIN_37_5DB);
-    ret_val |= es7210_adc_set_gain(ES7210_INPUT_MIC3, GAIN_33DB);
-    ret_val |= es7210_adc_set_gain(ES7210_INPUT_MIC4, GAIN_37_5DB);
-    ret_val |= es7210_adc_ctrl_state(cfg.codec_mode, AUDIO_HAL_CTRL_START);
-
-    if (ESP_OK != ret_val) {
-        ESP_LOGE(TAG, "Failed initialize codec");
-    }
-
-    return ret_val;
-}
-
-esp_err_t bsp_codec_dac_init(audio_hal_iface_samples_t sample_rate)
-{
-    esp_err_t ret_val = ESP_OK;
-    audio_hal_codec_config_t cfg = {
-        .codec_mode = AUDIO_HAL_CODEC_MODE_DECODE,
-        .dac_output = AUDIO_HAL_DAC_OUTPUT_LINE1,
-        .i2s_iface = {
-            .bits = AUDIO_HAL_BIT_LENGTH_16BITS,
-            .fmt = AUDIO_HAL_I2S_NORMAL,
-            .mode = AUDIO_HAL_MODE_SLAVE,
-            .samples = sample_rate,
-        },
-    };
-
-    ret_val |= es8311_codec_init(&cfg);
-    ret_val |= es8311_set_bits_per_sample(cfg.i2s_iface.bits);
-    ret_val |= es8311_config_fmt(cfg.i2s_iface.fmt);
-    ret_val |= es8311_codec_set_voice_volume(60);
-    ret_val |= es8311_codec_ctrl_state(cfg.codec_mode, AUDIO_HAL_CTRL_START);
-    // ret_val |= es8311_codec_set_clk();
-
-    if (ESP_OK != ret_val) {
-        ESP_LOGE(TAG, "Failed initialize codec");
-    }
-
-    return ret_val;
-}
 
 static esp_err_t bsp_i2s_init(i2s_port_t i2s_num, uint32_t sample_rate, i2s_channel_fmt_t channel_format, i2s_bits_per_chan_t bits_per_chan)
 {
@@ -250,34 +66,6 @@ static esp_err_t bsp_i2s_deinit(i2s_port_t i2s_num)
     ret_val |= i2s_stop(I2S_NUM_0);
     ret_val |= i2s_driver_uninstall(i2s_num);
 
-    return ret_val;
-}
-
-static esp_err_t bsp_codec_prob(int *codec_type)
-{
-    for (size_t i = 0; i < sizeof(codec_dev_list) / sizeof(codec_dev_list[0]); i++) {
-        if (ESP_OK == bsp_i2c_probe_addr(codec_dev_list[i].dev_addr)) {
-            *codec_type |= 1 << i;
-            ESP_LOGI(TAG, "Detected codec at 0x%02X. Name : %s",
-                     codec_dev_list[i].dev_addr, codec_dev_list[i].dev_name);
-        }
-    }
-
-    if (0 == *codec_type) {
-        *codec_type = CODEC_TYPE_NONE;
-        ESP_LOGW(TAG, "Codec not detected");
-        return ESP_ERR_NOT_FOUND;
-    }
-
-    return ESP_OK;
-}
-
-static esp_err_t bsp_codec_init(audio_hal_iface_samples_t sample_rate)
-{
-    esp_err_t ret_val = ESP_OK;
-
-    ret_val |= bsp_codec_adc_init(sample_rate);
-    ret_val |= bsp_codec_dac_init(sample_rate);
     return ret_val;
 }
 
@@ -359,9 +147,6 @@ int bsp_get_feed_channel(void)
 
 esp_err_t bsp_board_init(audio_hal_iface_samples_t sample_rate, int channel_format, int bits_per_chan)
 {
-    /*!< Initialize I2C bus, used for audio codec*/
-    bsp_i2c_init(I2C_NUM_0, 400 * 1000);
-
     int sample_fre = 16000;
     switch (sample_rate) {
     case AUDIO_HAL_08K_SAMPLES:
@@ -389,7 +174,6 @@ esp_err_t bsp_board_init(audio_hal_iface_samples_t sample_rate, int channel_form
     s_bits_per_chan = bits_per_chan;
 
     bsp_i2s_init(I2S_NUM_1, 16000, I2S_CHANNEL_FMT_RIGHT_LEFT, I2S_BITS_PER_CHAN_32BIT);
-    bsp_codec_init(AUDIO_HAL_16K_SAMPLES);
     /* Initialize PA */
     gpio_config_t  io_conf;
     memset(&io_conf, 0, sizeof(io_conf));

@@ -140,6 +140,16 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
+# Audio Media HAL
+#
+# CONFIG_ESP32_S3_BOX_BOARD is not set
+CONFIG_ESP32_S3_KORVO_1_V4_0_BOARD=y
+# CONFIG_ESP32_S3_KORVO_2_V3_0_BOARD is not set
+# CONFIG_ESP32_S3_EYE_BOARD is not set
+# CONFIG_ESP32_S3_CUSTOM_HW is not set
+# end of Audio Media HAL
+
+#
 # ESP Speech Recognition
 #
 CONFIG_MODEL_IN_SPIFFS=y
@@ -157,16 +167,6 @@ CONFIG_SR_WN_WN9_HILEXIN=y
 # CONFIG_SR_WN_LOAD_MULIT_WORD is not set
 # CONFIG_USE_MULTINET is not set
 # end of ESP Speech Recognition
-
-#
-# Audio Media HAL
-#
-# CONFIG_ESP32_S3_BOX_BOARD is not set
-CONFIG_ESP32_S3_KORVO_1_V4_0_BOARD=y
-# CONFIG_ESP32_S3_KORVO_2_V3_0_BOARD is not set
-# CONFIG_ESP32_S3_EYE_BOARD is not set
-# CONFIG_ESP32_S3_CUSTOM_HW is not set
-# end of Audio Media HAL
 
 #
 # Compiler options

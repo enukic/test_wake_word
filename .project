@@ -1969,11 +1969,6 @@
 			<location>C:/Users/Em/.espressif/frameworks/esp-idf-v4.4/components/nvs_flash/src/nvs_types.cpp</location>
 		</link>
 		<link>
-			<name>esp_idf_components/omponents/hardware_driver/esp_board_init.c</name>
-			<type>1</type>
-			<location>C:/Users/Em/.espressif/frameworks/esp-skainet/components/hardware_driver/esp_board_init.c</location>
-		</link>
-		<link>
 			<name>esp_idf_components/omponents/player/esp_skainet_player.c</name>
 			<type>1</type>
 			<location>C:/Users/Em/.espressif/frameworks/esp-skainet/components/player/esp_skainet_player.c</location>
@@ -3274,16 +3269,6 @@
 			<location>C:/Users/Em/.espressif/frameworks/esp-skainet/components/esp-sr/src/model_path.c</location>
 		</link>
 		<link>
-			<name>esp_idf_components/omponents/hardware_driver/i2c_bus/i2c_bus.c</name>
-			<type>1</type>
-			<location>C:/Users/Em/.espressif/frameworks/esp-skainet/components/hardware_driver/i2c_bus/i2c_bus.c</location>
-		</link>
-		<link>
-			<name>esp_idf_components/omponents/hardware_driver/led/ws2812.c</name>
-			<type>1</type>
-			<location>C:/Users/Em/.espressif/frameworks/esp-skainet/components/hardware_driver/led/ws2812.c</location>
-		</link>
-		<link>
 			<name>esp_idf_components/omponents/player/esp_tts_wav/wav_decoder.c</name>
 			<type>1</type>
 			<location>C:/Users/Em/.espressif/frameworks/esp-skainet/components/player/esp_tts_wav/wav_decoder.c</location>
@@ -4012,26 +3997,6 @@
 			<name>esp_idf_components/mbedtls/port/sha/dma/sha.c</name>
 			<type>1</type>
 			<location>C:/Users/Em/.espressif/frameworks/esp-idf-v4.4/components/mbedtls/port/sha/dma/sha.c</location>
-		</link>
-		<link>
-			<name>esp_idf_components/omponents/hardware_driver/boards/esp32s3-korvo-1/bsp_board.c</name>
-			<type>1</type>
-			<location>C:/Users/Em/.espressif/frameworks/esp-skainet/components/hardware_driver/boards/esp32s3-korvo-1/bsp_board.c</location>
-		</link>
-		<link>
-			<name>esp_idf_components/omponents/hardware_driver/codec/es7210/es7210.c</name>
-			<type>1</type>
-			<location>C:/Users/Em/.espressif/frameworks/esp-skainet/components/hardware_driver/codec/es7210/es7210.c</location>
-		</link>
-		<link>
-			<name>esp_idf_components/omponents/hardware_driver/codec/es8311/es8311.c</name>
-			<type>1</type>
-			<location>C:/Users/Em/.espressif/frameworks/esp-skainet/components/hardware_driver/codec/es8311/es8311.c</location>
-		</link>
-		<link>
-			<name>esp_idf_components/omponents/hardware_driver/codec/es8388/es8388.c</name>
-			<type>1</type>
-			<location>C:/Users/Em/.espressif/frameworks/esp-skainet/components/hardware_driver/codec/es8388/es8388.c</location>
 		</link>
 		<link>
 			<name>esp_idf_components/libsodium/libsodium/src/libsodium/crypto_auth/crypto_auth.c</name>
