@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "esp32_s3_eye_board.h": "c",
+        "esp32_s3_custom_hw.h": "c"
+    }
+}
