@@ -92,16 +92,16 @@ void app_main()
     afe_config.wakenet_model_name = wn_name;
     afe_config.voice_communication_init = false;
 
-#if defined CONFIG_ESP32_S3_BOX_BOARD || defined CONFIG_ESP32_S3_EYE_BOARD
+    //#if defined CONFIG_ESP32_S3_BOX_BOARD || defined CONFIG_ESP32_S3_EYE_BOARD
     afe_config.aec_init = false;
-    #if defined CONFIG_ESP32_S3_EYE_BOARD
+    //    #if defined CONFIG_ESP32_S3_EYE_BOARD
         afe_config.pcm_config.total_ch_num = 2;
         afe_config.pcm_config.mic_num = 1;
         afe_config.pcm_config.ref_num = 1;
-    #endif
-#endif
+    //    #endif
+    //#endif
     afe_data = afe_handle->create_from_config(&afe_config);
-    
+
     task_flag = 1;
     xTaskCreatePinnedToCore(&feed_Task, "feed", 8 * 1024, (void*)afe_data, 5, NULL, 0);
     xTaskCreatePinnedToCore(&detect_Task, "detect", 4 * 1024, (void*)afe_data, 5, NULL, 1);
@@ -112,5 +112,5 @@ void app_main()
     // printf("destroy\n");
     // afe_handle->destroy(afe_data);
     // afe_data = NULL;
-    // printf("successful\n");
+    //  printf("successful\n");
 }

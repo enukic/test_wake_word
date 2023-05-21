@@ -31,7 +31,7 @@
 #define GPIO_MUTE_NUM   GPIO_NUM_1
 #define GPIO_MUTE_LEVEL 1
 #define ACK_CHECK_EN   0x1     /*!< I2C master will check ack from slave*/
-#define ADC_I2S_CHANNEL 4
+#define ADC_I2S_CHANNEL 2
 static sdmmc_card_t *card;
 static i2c_bus_handle_t i2c_bus_handle = NULL;
 static const char *TAG = "board";
@@ -44,6 +44,7 @@ static esp_err_t bsp_i2s_init(i2s_port_t i2s_num, uint32_t sample_rate, i2s_chan
     esp_err_t ret_val = ESP_OK;
 
     i2s_config_t i2s_config = I2S_CONFIG_DEFAULT();
+    i2s_config.mode = I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM;
 
     i2s_pin_config_t pin_config = {
         .bck_io_num = GPIO_I2S_SCLK,
@@ -111,13 +112,13 @@ esp_err_t bsp_audio_play(const int16_t* data, int length, TickType_t ticks_to_wa
     }
 
     if (data_out != NULL) {
-        ret = i2s_write(I2S_NUM_1, (const char*) data_out, out_length, &bytes_write, ticks_to_wait);
+        ret = i2s_write(I2S_NUM_0, (const char*) data_out, out_length, &bytes_write, ticks_to_wait);
         free(data_out);
     } else if (data_out_1 != NULL) {
-        ret = i2s_write(I2S_NUM_1, (const char*) data_out_1, out_length, &bytes_write, ticks_to_wait);
+        ret = i2s_write(I2S_NUM_0, (const char*) data_out_1, out_length, &bytes_write, ticks_to_wait);
         free(data_out_1);
     } else {
-        ret = i2s_write(I2S_NUM_1, (const char*) data_out, length, &bytes_write, ticks_to_wait);
+        ret = i2s_write(I2S_NUM_0, (const char*) data_out, length, &bytes_write, ticks_to_wait);
     }
 
     return ret;
@@ -127,14 +128,12 @@ esp_err_t bsp_get_feed_data(int16_t *buffer, int buffer_len)
 {
     esp_err_t ret = ESP_OK;
     size_t bytes_read;
-    int audio_chunksize = buffer_len / (sizeof(int16_t) * ADC_I2S_CHANNEL);
-    ret = i2s_read(I2S_NUM_1, buffer, buffer_len, &bytes_read, portMAX_DELAY);
+    int audio_chunksize = buffer_len / (sizeof(int32_t));
+    ret = i2s_read(I2S_NUM_0, buffer, buffer_len, &bytes_read, portMAX_DELAY);
 
+    int32_t *tmp_buff = buffer;
     for (int i = 0; i < audio_chunksize; i++) {
-        int16_t ref = buffer[4 * i + 0];
-        buffer[3 * i + 0] = buffer[4 * i + 1];
-        buffer[3 * i + 1] = buffer[4 * i + 3];
-        buffer[3 * i + 2] = ref;
+        tmp_buff[i] = tmp_buff[i] >> 14; // 32:8为有效位， 8:0为低8位， 全为0， AFE的输入为16位语音数据，拿29：13位是为了对语音信号放大。
     }
 
     return ret;
@@ -147,43 +146,43 @@ int bsp_get_feed_channel(void)
 
 esp_err_t bsp_board_init(audio_hal_iface_samples_t sample_rate, int channel_format, int bits_per_chan)
 {
-    int sample_fre = 16000;
-    switch (sample_rate) {
-    case AUDIO_HAL_08K_SAMPLES:
-        sample_fre = 8000;
-        break;
-    case AUDIO_HAL_16K_SAMPLES:
-        sample_fre = 16000;
-        break;
-    default:
-        ESP_LOGE(TAG, "Unable to configure sample rate %dHz", sample_fre);
-        break;
-    }
-    s_play_sample_rate = sample_fre;
+    // int sample_fre = 16000;
+    // switch (sample_rate) {
+    // case AUDIO_HAL_08K_SAMPLES:
+    //     sample_fre = 8000;
+    //     break;
+    // case AUDIO_HAL_16K_SAMPLES:
+    //     sample_fre = 16000;
+    //     break;
+    // default:
+    //     ESP_LOGE(TAG, "Unable to configure sample rate %dHz", sample_fre);
+    //     break;
+    // }
+    // s_play_sample_rate = sample_fre;
 
-    if (channel_format != 2 && channel_format != 1) {
-        ESP_LOGE(TAG, "Unable to configure channel_format");
-        channel_format = 2;
-    }
-    s_play_channel_format = channel_format;
+    // if (channel_format != 2 && channel_format != 1) {
+    //     ESP_LOGE(TAG, "Unable to configure channel_format");
+    //     channel_format = 2;
+    // }
+    // s_play_channel_format = channel_format;
 
-    if (bits_per_chan != 32 && bits_per_chan != 16) {
-        ESP_LOGE(TAG, "Unable to configure bits_per_chan");
-        bits_per_chan = 32;
-    }
-    s_bits_per_chan = bits_per_chan;
+    // if (bits_per_chan != 32 && bits_per_chan != 16) {
+    //     ESP_LOGE(TAG, "Unable to configure bits_per_chan");
+    //     bits_per_chan = 32;
+    // }
+    // s_bits_per_chan = bits_per_chan;
 
-    bsp_i2s_init(I2S_NUM_1, 16000, I2S_CHANNEL_FMT_RIGHT_LEFT, I2S_BITS_PER_CHAN_32BIT);
+    bsp_i2s_init(I2S_NUM_0, 16000, I2S_CHANNEL_FMT_RIGHT_LEFT, I2S_BITS_PER_CHAN_32BIT);
     /* Initialize PA */
-    gpio_config_t  io_conf;
-    memset(&io_conf, 0, sizeof(io_conf));
-    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pin_bit_mask = ((1ULL << GPIO_PWR_CTRL));
-    io_conf.pull_down_en = 0;
-    io_conf.pull_up_en = 0;
-    gpio_config(&io_conf);
-    gpio_set_level(GPIO_PWR_CTRL, 1);
+    // gpio_config_t  io_conf;
+    // memset(&io_conf, 0, sizeof(io_conf));
+    // io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+    // io_conf.mode = GPIO_MODE_OUTPUT;
+    // io_conf.pin_bit_mask = ((1ULL << GPIO_PWR_CTRL));
+    // io_conf.pull_down_en = 0;
+    // io_conf.pull_up_en = 0;
+    // gpio_config(&io_conf);
+    // gpio_set_level(GPIO_PWR_CTRL, 1);
     return ESP_OK;
 }
 

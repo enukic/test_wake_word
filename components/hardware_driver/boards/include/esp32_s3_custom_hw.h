@@ -18,31 +18,24 @@
 
 #include "driver/gpio.h"
 
-/**
- * @brief ESP32-S3-EYE I2C GPIO defineation
- * 
- */
-#define FUNC_I2C_EN     (0)
-#define GPIO_I2C_SCL    (GPIO_NUM_NC)
-#define GPIO_I2C_SDA    (GPIO_NUM_NC)
 
 /**
- * @brief ESP32-S3-EYE SDMMC GPIO defination
+ * @brief ESP32-S3-CUSTOM-HW SDMMC GPIO defination
  * 
  * @note Only avaliable when PMOD connected
  */
-#define FUNC_SDMMC_EN   (1)
+#define FUNC_SDMMC_EN   (0)
 #define SDMMC_BUS_WIDTH (1)
 #define GPIO_SDMMC_CLK  (GPIO_NUM_39)
 #define GPIO_SDMMC_CMD  (GPIO_NUM_38)
 #define GPIO_SDMMC_D0   (GPIO_NUM_40)
-#define GPIO_SDMMC_D1   (GPIO_NUM_4)
+#define GPIO_SDMMC_D1   (GPIO_NUM_14)
 #define GPIO_SDMMC_D2   (GPIO_NUM_12)
 #define GPIO_SDMMC_D3   (GPIO_NUM_13)
 #define GPIO_SDMMC_DET  (GPIO_NUM_NC)
 
 /**
- * @brief ESP32-S3-EYE SDSPI GPIO definationv
+ * @brief ESP32-S3-CUSTOM-HW SDSPI GPIO definationv
  * 
  */
 #define FUNC_SDSPI_EN       (0)
@@ -53,18 +46,18 @@
 #define GPIO_SDSPI_MOSI     (GPIO_NUM_NC)
 
 /**
- * @brief ESP32-S3-EYE I2S GPIO defination
+ * @brief ESP32-S3-CUSTOM-HW I2S GPIO defination
  * 
  */
 #define FUNC_I2S_EN         (1)
-#define GPIO_I2S_LRCK       (GPIO_NUM_42)
+#define GPIO_I2S_LRCK       (GPIO_NUM_4)
 #define GPIO_I2S_MCLK       (GPIO_NUM_NC)
-#define GPIO_I2S_SCLK       (GPIO_NUM_41)
-#define GPIO_I2S_SDIN       (GPIO_NUM_2)
+#define GPIO_I2S_SCLK       (GPIO_NUM_NC)
+#define GPIO_I2S_SDIN       (GPIO_NUM_5)
 #define GPIO_I2S_DOUT       (GPIO_NUM_NC)
 
 /**
- * @brief ESP32-S3-EYE I2S GPIO defination
+ * @brief ESP32-S3-CUSTOM-HW I2S GPIO defination
  * 
  */
 #define FUNC_I2S0_EN         (0)
@@ -75,7 +68,7 @@
 #define GPIO_I2S0_DOUT       (GPIO_NUM_NC)
 
 /**
- * @brief ESP32-S3-EYE power control IO
+ * @brief ESP32-S3-CUSTOM-HW power control IO
  * 
  * @note Some power control pins might not be listed yet
  * 
