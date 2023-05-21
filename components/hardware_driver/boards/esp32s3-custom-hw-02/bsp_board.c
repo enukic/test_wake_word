@@ -77,7 +77,7 @@ esp_err_t bsp_get_feed_data(int16_t *buffer, int buffer_len)
     esp_err_t ret = ESP_OK;
     size_t bytes_read;
     int audio_chunksize = buffer_len / (sizeof(int32_t));
-    ret = i2s_read(I2S_NUM_1, buffer, buffer_len, &bytes_read, portMAX_DELAY);
+    ret = i2s_read(I2S_NUM_0, buffer, buffer_len, &bytes_read, portMAX_DELAY);
 
     int32_t *tmp_buff = buffer;
     for (int i = 0; i < audio_chunksize; i++) {
@@ -94,7 +94,7 @@ int bsp_get_feed_channel(void)
 
 esp_err_t bsp_board_init(audio_hal_iface_samples_t sample_rate, int channel_format, int bits_per_chan)
 {
-    bsp_i2s_init(I2S_NUM_1, 16000, I2S_CHANNEL_FMT_RIGHT_LEFT, I2S_BITS_PER_CHAN_32BIT);
+    bsp_i2s_init(I2S_NUM_0, 16000, I2S_CHANNEL_FMT_RIGHT_LEFT, I2S_BITS_PER_CHAN_32BIT);
 
     return ESP_OK;
 }
