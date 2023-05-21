@@ -23,6 +23,9 @@ config ESP32_S3_EYE_BOARD
 config ESP32_S3_CUSTOM_HW
     bool "ESP32-S3-CUSTOM-HW"
     depends on IDF_TARGET_ESP32S3
+config ESP32_S3_CUSTOM_HW_02
+    bool "ESP32-S3-CUSTOM-HW-02"
+    depends on IDF_TARGET_ESP32S3
 endchoice
 
 endmenu

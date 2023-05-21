@@ -22,6 +22,10 @@ if(CONFIG_ESP32_S3_CUSTOM_HW)
     list(APPEND BSP_BOARD_SRC "./boards/esp32s3-custom-hw")
 endif()
 
+if(CONFIG_ESP32_S3_CUSTOM_HW_02)
+    list(APPEND BSP_BOARD_SRC "./boards/esp32s3-custom-hw-02")
+endif()
+
 idf_component_register(
     SRC_DIRS
         "./"

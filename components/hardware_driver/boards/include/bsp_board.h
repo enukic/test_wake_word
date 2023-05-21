@@ -41,6 +41,8 @@
     #include "esp_custom_board.h"
 #elif CONFIG_ESP32_S3_CUSTOM_HW
     #include "esp32_s3_custom_hw.h"
+#elif CONFIG_ESP32_S3_CUSTOM_HW_02
+    #include "esp32_s3_custom_hw_02.h"
 #else 
     #error "Please select type of dev board"
 #endif
