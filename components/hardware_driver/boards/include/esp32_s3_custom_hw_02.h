@@ -59,7 +59,7 @@
 #define FUNC_I2S_EN         (1)
 #define GPIO_I2S_LRCK       (GPIO_NUM_42)
 #define GPIO_I2S_MCLK       (GPIO_NUM_NC)
-#define GPIO_I2S_SCLK       (GPIO_NUM_NC)
+#define GPIO_I2S_SCLK       (GPIO_NUM_41)
 #define GPIO_I2S_SDIN       (GPIO_NUM_2)
 #define GPIO_I2S_DOUT       (GPIO_NUM_NC)
 
@@ -85,7 +85,7 @@
 #define GPIO_PWR_ON_LEVEL   (1)
 
 #define I2S_CONFIG_DEFAULT() { \
-    .mode                   = I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM, \
+    .mode                   = I2S_MODE_MASTER | I2S_MODE_RX, \
     .sample_rate            = 16000, \
     .bits_per_sample        = I2S_BITS_PER_SAMPLE_32BIT, \
     .channel_format         = I2S_CHANNEL_FMT_ONLY_LEFT, \
